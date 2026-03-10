@@ -86,6 +86,7 @@
             return Promise.reject(new Error("Falta HASH_TOKEN en Ajustes"));
         }
         var nodes = getOrCreateNodes(mountNode);
+        setSingleActiveConfiguration(nodes.conf);
         nodes.conf.textContent = hashToken;
         nodes.sim.setAttribute("amount", amount.toFixed(2));
         nodes.sim.setAttribute("theme", "grey");
@@ -114,6 +115,28 @@
                 }
                 window.icSimulator.refresh();
             });
+    }
+
+    function setSingleActiveConfiguration(activeNode) {
+        var activeClass = "ic-configuration d-none";
+        var disabledClass = "ic-configuration-disabled d-none";
+
+        var activeNodes = document.querySelectorAll(".ic-configuration");
+        Array.prototype.forEach.call(activeNodes, function (node) {
+            if (node !== activeNode) {
+                node.textContent = "";
+                node.className = disabledClass;
+            }
+        });
+
+        var disabledNodes = document.querySelectorAll(".ic-configuration-disabled");
+        Array.prototype.forEach.call(disabledNodes, function (node) {
+            if (node !== activeNode) {
+                node.textContent = "";
+            }
+        });
+
+        activeNode.className = activeClass;
     }
 
     function normalizeHashToken(rawHash) {
@@ -210,12 +233,18 @@
         if (!selected) {
             return;
         }
-        var isInstant = selected.dataset.paycometInstantcredit === "1";
+        var selectedMethodCode = selected.dataset.paymentMethodCode
+            ? selected.dataset.paymentMethodCode.toLowerCase()
+            : "";
+        var isInstant = selected.dataset.paycometInstantcredit === "1" || selectedMethodCode === "credit";
         if (!isInstant) {
             return;
         }
-        var option = selected.closest("[name='o_payment_option']");
+        var option = selected.closest("[name='o_payment_option'], .o_payment_option, .list-group-item");
         var container = option ? option.querySelector("[data-paycomet-instantcredit-container='1']") : null;
+        if (!container) {
+            container = paymentForm.querySelector("[data-paycomet-instantcredit-container='1'][data-paycomet-eligible='1']");
+        }
         if (!container || container.dataset.paycometEligible !== "1") {
             return;
         }
@@ -256,6 +285,16 @@
         form.addEventListener("click", function (ev) {
             if (ev.target && (ev.target.name === "o_payment_radio" || ev.target.closest("[name='o_payment_option']"))) {
                 syncPaymentVisibility(form);
+            }
+        });
+
+        document.addEventListener("change", function (ev) {
+            if (!ev.target || ev.target.name !== "o_payment_radio") {
+                return;
+            }
+            var currentForm = document.querySelector("#o_payment_form");
+            if (currentForm) {
+                syncPaymentVisibility(currentForm);
             }
         });
     }
