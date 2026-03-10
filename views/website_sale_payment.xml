@@ -51,4 +51,20 @@
         </xpath>
     </template>
 
+    <template id="website_sale_cart_load_paycomet_script"
+              inherit_id="website_sale.cart"
+              name="Load PAYCOMET script on cart">
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']" position="inside">
+            <script src="/INSTANTCREDIT_SIMULADOR/static/src/js/paycomet_instantcredit.js"/>
+        </xpath>
+    </template>
+
+    <template id="website_sale_payment_load_paycomet_script"
+              inherit_id="website_sale.payment"
+              name="Load PAYCOMET script on payment">
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']" position="inside">
+            <script src="/INSTANTCREDIT_SIMULADOR/static/src/js/paycomet_instantcredit.js"/>
+        </xpath>
+    </template>
+
 </odoo>
