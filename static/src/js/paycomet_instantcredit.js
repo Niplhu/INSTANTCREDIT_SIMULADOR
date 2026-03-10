@@ -222,11 +222,6 @@
             }
             simulatorNode.setAttribute("amount", orderAmount.toFixed(2));
             simulatorNode.setAttribute("theme", "grey");
-
-            var configNode = currentMount.querySelector(".ic-configuration");
-            if (configNode) {
-                configNode.textContent = "";
-            }
         });
 
         hideAllPaymentContainers(document);
@@ -246,9 +241,15 @@
         if (!isInstant) {
             return;
         }
-        var container = ensurePaymentContainer(option, paymentForm);
+        var container = document.querySelector(".o_paycomet_global_payment_simulator");
+        if (!container) {
+            container = ensurePaymentContainer(option, paymentForm);
+        }
         if (!container) {
             return;
+        }
+        if (option && container.classList.contains("o_paycomet_global_payment_simulator") && !option.contains(container)) {
+            option.appendChild(container);
         }
         container.dataset.paycometEligible = "1";
         container.classList.remove("d-none");
