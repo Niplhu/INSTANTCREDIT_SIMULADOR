@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="payment_method_form_inherit_paycomet_instantcredit"
+              inherit_id="payment.method_form"
+              name="PAYCOMET Instant Credit in checkout payment option">
+
+        <xpath expr="//input[@name='o_payment_radio']" position="attributes">
+            <attribute name="t-att-data-paycomet-instantcredit">
+                1 if (
+                    pm_sudo.is_paycomet_instant_credit
+                    or pm_sudo.code == 'credit'
+                    or 'instant credit' in (pm_sudo.name or '').lower()
+                ) else 0
+            </attribute>
+        </xpath>
+
+        <xpath expr="//div[@name='o_payment_inline_form']" position="after">
+            <div
+                 class="o_paycomet_instantcredit_container d-none ms-4"
+                 data-paycomet-instantcredit-container="1"
+                 t-attf-data-paycomet-eligible="{{ 1 if (pm_sudo.is_paycomet_instant_credit or pm_sudo.code == 'credit' or 'instant credit' in (pm_sudo.name or '').lower()) else 0 }}"
+                 t-att-data-script-url="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.script_url', '')"
+                 t-att-data-hash-token="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.hash_token', '')">
+                <div class="o_paycomet_instantcredit_mount mt-2">
+                    <t t-if="pm_sudo.is_paycomet_instant_credit or pm_sudo.code == 'credit' or 'instant credit' in (pm_sudo.name or '').lower()">
+                        <div class="ic-configuration d-none"/>
+                        <div class="ic-simulator"/>
+                    </t>
+                </div>
+            </div>
+        </xpath>
+
+    </template>
+
+    <template id="website_sale_total_inherit_paycomet_instantcredit"
+              inherit_id="website_sale.total"
+              name="PAYCOMET Instant Credit simulator in cart total">
+        <xpath expr="//div[@id='cart_total']" position="inside">
+            <div t-if="request and request.httprequest and request.httprequest.path == '/shop/cart'"
+                 class="o_paycomet_cart_simulator mt-3"
+                 data-paycomet-eligible="1"
+                 t-att-data-script-url="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.script_url', '')"
+                 t-att-data-hash-token="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.hash_token', '')"
+                 t-att-data-amount="website_sale_order.amount_total">
+                <div class="o_paycomet_instantcredit_mount">
+                    <div class="ic-configuration d-none"/>
+                    <div class="ic-simulator"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>
