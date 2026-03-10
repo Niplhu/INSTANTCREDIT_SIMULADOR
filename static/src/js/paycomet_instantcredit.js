@@ -1,6 +1,7 @@
-/** @odoo-module **/
+odoo.define("instantcredit_simulator.paycomet_instantcredit", function (require) {
+"use strict";
 
-import publicWidget from "@web/legacy/js/public/public_widget";
+const publicWidget = require("@web/legacy/js/public/public_widget");
 
 const FALLBACK_PAYCOMET_SCRIPT_URL = "https://REPLACE_WITH_PAYCOMET_SIMULATOR_JS_URL";
 const FALLBACK_HASH_TOKEN = "REPLACE_WITH_PAYCOMET_HASH_TOKEN";
@@ -328,4 +329,11 @@ publicWidget.registry.PaycometInstantCreditCartSimulator = publicWidget.Widget.e
         }
         messageNode.textContent = message;
     },
+});
+
+return {
+    PaycometInstantCreditSimulator: publicWidget.registry.PaycometInstantCreditSimulator,
+    PaycometInstantCreditCartSimulator: publicWidget.registry.PaycometInstantCreditCartSimulator,
+};
+
 });
