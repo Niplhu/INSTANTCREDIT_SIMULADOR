@@ -241,10 +241,7 @@
             return;
         }
         var option = selected.closest("[name='o_payment_option'], .o_payment_option, .list-group-item");
-        var container = option ? option.querySelector("[data-paycomet-instantcredit-container='1']") : null;
-        if (!container) {
-            container = paymentForm.querySelector("[data-paycomet-instantcredit-container='1'][data-paycomet-eligible='1']");
-        }
+        var container = ensurePaymentContainer(option, paymentForm);
         if (!container || container.dataset.paycometEligible !== "1") {
             return;
         }
@@ -297,6 +294,42 @@
                 syncPaymentVisibility(currentForm);
             }
         });
+    }
+
+    function ensurePaymentContainer(option, paymentForm) {
+        var container = option ? option.querySelector("[data-paycomet-instantcredit-container='1']") : null;
+        if (container) {
+            return container;
+        }
+
+        var globalConfig = document.querySelector(".o_paycomet_global_config");
+        if (!option || !globalConfig) {
+            return paymentForm.querySelector("[data-paycomet-instantcredit-container='1'][data-paycomet-eligible='1']");
+        }
+
+        container = document.createElement("div");
+        container.className = "o_paycomet_instantcredit_container ms-4";
+        container.setAttribute("data-paycomet-instantcredit-container", "1");
+        container.setAttribute("data-paycomet-eligible", "1");
+        container.setAttribute("data-script-url", globalConfig.dataset.scriptUrl || "");
+        container.setAttribute("data-hash-token", globalConfig.dataset.hashToken || "");
+        container.setAttribute("data-financial-product-id", globalConfig.dataset.financialProductId || "");
+
+        var mount = document.createElement("div");
+        mount.className = "o_paycomet_instantcredit_mount mt-2";
+
+        var conf = document.createElement("div");
+        conf.className = "ic-configuration d-none";
+
+        var sim = document.createElement("div");
+        sim.className = "ic-simulator";
+
+        mount.appendChild(conf);
+        mount.appendChild(sim);
+        container.appendChild(mount);
+        option.appendChild(container);
+
+        return container;
     }
 
     function boot() {
