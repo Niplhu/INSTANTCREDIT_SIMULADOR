@@ -14,11 +14,6 @@
         "views/payment_method_views.xml",
         "views/website_sale_payment.xml",
     ],
-    "assets": {
-        "web.assets_frontend": [
-            "instantcredit_simulator/static/src/js/paycomet_instantcredit.js",
-        ],
-    },
     "installable": True,
     "application": False,
 }
