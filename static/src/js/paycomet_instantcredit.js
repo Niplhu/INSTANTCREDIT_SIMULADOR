@@ -198,7 +198,7 @@
     }
 
     function hideAllPaymentContainers(root) {
-        var containers = root.querySelectorAll("[data-paycomet-instantcredit-container='1']");
+        var containers = root.querySelectorAll("[data-paycomet-instantcredit-container='1'], .o_paycomet_global_payment_simulator");
         Array.prototype.forEach.call(containers, function (container) {
             container.classList.add("d-none");
         });
@@ -208,7 +208,7 @@
         var selected = paymentForm.querySelector("input[name='o_payment_radio']:checked");
         var orderAmount = parseFloat(paymentForm.dataset.amount || "0") || 0;
 
-        var allContainers = paymentForm.querySelectorAll("[data-paycomet-instantcredit-container='1']");
+        var allContainers = document.querySelectorAll("[data-paycomet-instantcredit-container='1'], .o_paycomet_global_payment_simulator");
         Array.prototype.forEach.call(allContainers, function (currentContainer) {
             var currentMount = currentContainer.querySelector(".o_paycomet_instantcredit_mount");
             if (!currentMount) {
@@ -229,32 +229,48 @@
             }
         });
 
-        hideAllPaymentContainers(paymentForm);
+        hideAllPaymentContainers(document);
         if (!selected) {
             return;
         }
+        var option = findPaymentOptionContainer(selected, paymentForm);
+        var optionText = getOptionText(selected, option);
         var selectedMethodCode = selected.dataset.paymentMethodCode
             ? selected.dataset.paymentMethodCode.toLowerCase()
             : "";
-        var isInstant = selected.dataset.paycometInstantcredit === "1" || selectedMethodCode === "credit";
+        var isInstant = selected.dataset.paycometInstantcredit === "1"
+            || selectedMethodCode === "credit"
+            || optionText.indexOf("instant credit") !== -1
+            || optionText.indexOf("financiacion") !== -1
+            || optionText.indexOf("financiación") !== -1;
         if (!isInstant) {
             return;
         }
-        var option = selected.closest("[name='o_payment_option'], .o_payment_option, .list-group-item");
         var container = ensurePaymentContainer(option, paymentForm);
-        if (!container || container.dataset.paycometEligible !== "1") {
+        if (!container) {
             return;
         }
+        container.dataset.paycometEligible = "1";
         container.classList.remove("d-none");
         if (container.dataset.simulatorInitialized === "1" || container.dataset.simulatorInitializing === "1") {
             return;
         }
+        var resolvedHash = resolveHashToken(container);
+        if (!resolvedHash) {
+            var missingMount = container.querySelector(".o_paycomet_instantcredit_mount");
+            renderMessage(missingMount, "Falta HASH_TOKEN en Ajustes de Instant Credit.");
+            return;
+        }
         container.dataset.simulatorInitializing = "1";
         var mountNode = container.querySelector(".o_paycomet_instantcredit_mount");
+        var preparedNodes = mountNode ? getOrCreateNodes(mountNode) : null;
+        if (preparedNodes) {
+            preparedNodes.conf.textContent = resolvedHash;
+        }
         var amount = orderAmount;
         initOfficialSimulator({
             scriptUrl: container.dataset.scriptUrl,
-            hashToken: container.dataset.hashToken,
+            hashToken: resolvedHash,
             financialProductId: container.dataset.financialProductId,
             amount: amount,
             mountNode: mountNode,
@@ -302,9 +318,14 @@
             return container;
         }
 
+        var globalPaymentContainer = document.querySelector(".o_paycomet_global_payment_simulator");
+        if (globalPaymentContainer) {
+            return globalPaymentContainer;
+        }
+
         var globalConfig = document.querySelector(".o_paycomet_global_config");
         if (!option || !globalConfig) {
-            return paymentForm.querySelector("[data-paycomet-instantcredit-container='1'][data-paycomet-eligible='1']");
+            return paymentForm.querySelector("[data-paycomet-instantcredit-container='1']");
         }
 
         container = document.createElement("div");
@@ -330,6 +351,37 @@
         option.appendChild(container);
 
         return container;
+    }
+
+    function findPaymentOptionContainer(selected, paymentForm) {
+        var node = selected ? selected.parentElement : null;
+        while (node && node !== paymentForm) {
+            if (node.querySelectorAll) {
+                var radios = node.querySelectorAll("input[name='o_payment_radio']");
+                if (radios.length === 1 && radios[0] === selected) {
+                    return node;
+                }
+            }
+            node = node.parentElement;
+        }
+        return selected ? selected.closest("[name='o_payment_option'], .o_payment_option, .list-group-item") : null;
+    }
+
+    function getOptionText(selected, option) {
+        var text = option ? (option.textContent || "") : "";
+        if (!text && selected && selected.parentElement) {
+            text = selected.parentElement.textContent || "";
+        }
+        return text.toLowerCase();
+    }
+
+    function resolveHashToken(container) {
+        var token = (container && container.dataset && container.dataset.hashToken) ? container.dataset.hashToken : "";
+        if (!token) {
+            var globalConfig = document.querySelector(".o_paycomet_global_config, .o_paycomet_global_payment_simulator");
+            token = globalConfig && globalConfig.dataset ? (globalConfig.dataset.hashToken || "") : "";
+        }
+        return token;
     }
 
     function boot() {

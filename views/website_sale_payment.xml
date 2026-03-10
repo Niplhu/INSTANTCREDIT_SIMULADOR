@@ -69,12 +69,19 @@
 
     <template id="website_sale_payment_global_paycomet_config"
               inherit_id="website_sale.payment"
-              name="Global PAYCOMET config in payment page">
+              name="Global PAYCOMET simulator in payment page">
         <xpath expr="//div[@id='payment_method']" position="after">
-            <div class="o_paycomet_global_config d-none"
+            <div class="o_paycomet_global_payment_simulator d-none mt-3"
+                 data-paycomet-instantcredit-container="1"
+                 data-paycomet-eligible="1"
                  t-att-data-script-url="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.script_url', '')"
                  t-att-data-hash-token="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.hash_token', '')"
-                 t-att-data-financial-product-id="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.financial_product_id', '')"/>
+                 t-att-data-financial-product-id="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.financial_product_id', '')">
+                <div class="o_paycomet_instantcredit_mount">
+                    <div class="ic-configuration d-none"/>
+                    <div class="ic-simulator"/>
+                </div>
+            </div>
         </xpath>
     </template>
 
