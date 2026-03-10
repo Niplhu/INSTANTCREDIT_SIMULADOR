@@ -14,3 +14,8 @@ class ResConfigSettings(models.TransientModel):
         config_parameter="instantcredit_simulator.hash_token",
         help="HASH_TOKEN used by PAYCOMET simulator initialization.",
     )
+    instantcredit_financial_product_id = fields.Char(
+        string="PAYCOMET Financial Product ID",
+        config_parameter="instantcredit_simulator.financial_product_id",
+        help="Optional financial product id required by some Instant Credit configurations.",
+    )

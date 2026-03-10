@@ -75,7 +75,8 @@
 
     function initOfficialSimulator(opts) {
         var scriptUrl = opts.scriptUrl || DEFAULT_SCRIPT_URL;
-        var hashToken = opts.hashToken || HASH_PLACEHOLDER;
+        var hashToken = normalizeHashToken(opts.hashToken || HASH_PLACEHOLDER);
+        var financialProductId = (opts.financialProductId || "").trim();
         var amount = Number.isFinite(opts.amount) ? opts.amount : 0;
         var mountNode = opts.mountNode;
         if (!mountNode) {
@@ -88,6 +89,11 @@
         nodes.conf.textContent = hashToken;
         nodes.sim.setAttribute("amount", amount.toFixed(2));
         nodes.sim.setAttribute("theme", "grey");
+        if (financialProductId) {
+            nodes.sim.setAttribute("financialProductId", financialProductId);
+        } else {
+            nodes.sim.removeAttribute("financialProductId");
+        }
 
         var baseUrl = scriptUrl.replace(/\/ic-simulator\.js(?:\?.*)?$/, "");
         ensureCss(baseUrl + "/css/ic-style-4.0.1.css");
@@ -101,6 +107,7 @@
                 if (!window.icSimulator && window.ICSimulator) {
                     window.icSimulator = new window.ICSimulator();
                     window.icSimulator.initialize();
+                    return;
                 }
                 if (!window.icSimulator || typeof window.icSimulator.refresh !== "function") {
                     throw new Error("El script no expone la API icSimulator esperada");
@@ -109,9 +116,41 @@
             });
     }
 
+    function normalizeHashToken(rawHash) {
+        var token = (rawHash || "").replace(/\s+/g, "").trim();
+        if (!token) {
+            return token;
+        }
+        var deduped = getRepeatedBase(token);
+        if (deduped !== token) {
+            console.warn("PAYCOMET hash token parecia repetido. Se usara la version base.");
+        }
+        return deduped;
+    }
+
+    function getRepeatedBase(token) {
+        var len = token.length;
+        var size;
+        for (size = 1; size <= Math.floor(len / 2); size++) {
+            if (len % size !== 0) {
+                continue;
+            }
+            var unit = token.slice(0, size);
+            var rebuilt = "";
+            var i;
+            for (i = 0; i < len / size; i++) {
+                rebuilt += unit;
+            }
+            if (rebuilt === token) {
+                return unit;
+            }
+        }
+        return token;
+    }
+
     function initCart() {
         var cart = document.querySelector(".o_paycomet_cart_simulator");
-        if (!cart || cart.dataset.paycometEligible !== "1") {
+        if (!cart) {
             return;
         }
         if (cart.dataset.simulatorInitialized === "1" || cart.dataset.simulatorInitializing === "1") {
@@ -123,6 +162,7 @@
         initOfficialSimulator({
             scriptUrl: cart.dataset.scriptUrl,
             hashToken: cart.dataset.hashToken,
+            financialProductId: cart.dataset.financialProductId,
             amount: amount,
             mountNode: mountNode,
         }).then(function () {
@@ -143,6 +183,29 @@
 
     function syncPaymentVisibility(paymentForm) {
         var selected = paymentForm.querySelector("input[name='o_payment_radio']:checked");
+        var orderAmount = parseFloat(paymentForm.dataset.amount || "0") || 0;
+
+        var allContainers = paymentForm.querySelectorAll("[data-paycomet-instantcredit-container='1']");
+        Array.prototype.forEach.call(allContainers, function (currentContainer) {
+            var currentMount = currentContainer.querySelector(".o_paycomet_instantcredit_mount");
+            if (!currentMount) {
+                return;
+            }
+            var simulatorNode = currentMount.querySelector(".ic-simulator");
+            if (!simulatorNode) {
+                simulatorNode = document.createElement("div");
+                simulatorNode.className = "ic-simulator";
+                currentMount.appendChild(simulatorNode);
+            }
+            simulatorNode.setAttribute("amount", orderAmount.toFixed(2));
+            simulatorNode.setAttribute("theme", "grey");
+
+            var configNode = currentMount.querySelector(".ic-configuration");
+            if (configNode) {
+                configNode.textContent = "";
+            }
+        });
+
         hideAllPaymentContainers(paymentForm);
         if (!selected) {
             return;
@@ -162,10 +225,11 @@
         }
         container.dataset.simulatorInitializing = "1";
         var mountNode = container.querySelector(".o_paycomet_instantcredit_mount");
-        var amount = parseFloat(paymentForm.dataset.amount || "0") || 0;
+        var amount = orderAmount;
         initOfficialSimulator({
             scriptUrl: container.dataset.scriptUrl,
             hashToken: container.dataset.hashToken,
+            financialProductId: container.dataset.financialProductId,
             amount: amount,
             mountNode: mountNode,
         }).then(function () {

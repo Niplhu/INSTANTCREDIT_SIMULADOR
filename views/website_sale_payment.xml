@@ -21,12 +21,11 @@
                  data-paycomet-instantcredit-container="1"
                  t-attf-data-paycomet-eligible="{{ 1 if (pm_sudo.is_paycomet_instant_credit or pm_sudo.code == 'credit' or 'instant credit' in (pm_sudo.name or '').lower()) else 0 }}"
                  t-att-data-script-url="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.script_url', '')"
-                 t-att-data-hash-token="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.hash_token', '')">
+                 t-att-data-hash-token="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.hash_token', '')"
+                 t-att-data-financial-product-id="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.financial_product_id', '')">
                 <div class="o_paycomet_instantcredit_mount mt-2">
-                    <t t-if="pm_sudo.is_paycomet_instant_credit or pm_sudo.code == 'credit' or 'instant credit' in (pm_sudo.name or '').lower()">
-                        <div class="ic-configuration d-none"/>
-                        <div class="ic-simulator"/>
-                    </t>
+                    <div t-if="pm_sudo.is_paycomet_instant_credit or pm_sudo.code == 'credit' or 'instant credit' in (pm_sudo.name or '').lower()" class="ic-configuration d-none"/>
+                    <div class="ic-simulator"/>
                 </div>
             </div>
         </xpath>
@@ -38,10 +37,11 @@
               name="PAYCOMET Instant Credit simulator in cart total">
         <xpath expr="//div[@id='cart_total']" position="inside">
             <div t-if="request and request.httprequest and request.httprequest.path == '/shop/cart'"
-                 class="o_paycomet_cart_simulator mt-3"
+             class="o_paycomet_cart_simulator mt-3"
                  data-paycomet-eligible="1"
                  t-att-data-script-url="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.script_url', '')"
                  t-att-data-hash-token="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.hash_token', '')"
+                 t-att-data-financial-product-id="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.financial_product_id', '')"
                  t-att-data-amount="website_sale_order.amount_total">
                 <div class="o_paycomet_instantcredit_mount">
                     <div class="ic-configuration d-none"/>
@@ -54,8 +54,8 @@
     <template id="website_sale_cart_load_paycomet_script"
               inherit_id="website_sale.cart"
               name="Load PAYCOMET script on cart">
-        <xpath expr="//t[@t-call='website_sale.checkout_layout']" position="inside">
-            <script src="/INSTANTCREDIT_SIMULADOR/static/src/js/paycomet_instantcredit.js"/>
+        <xpath expr="//t[@t-call='website_sale.cart_lines']" position="after">
+            <script src="/instantcredit_simulator/static/src/js/paycomet_instantcredit.js"/>
         </xpath>
     </template>
 
@@ -63,7 +63,7 @@
               inherit_id="website_sale.payment"
               name="Load PAYCOMET script on payment">
         <xpath expr="//t[@t-call='website_sale.checkout_layout']" position="inside">
-            <script src="/INSTANTCREDIT_SIMULADOR/static/src/js/paycomet_instantcredit.js"/>
+            <script src="/instantcredit_simulator/static/src/js/paycomet_instantcredit.js"/>
         </xpath>
     </template>
 

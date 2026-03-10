@@ -17,6 +17,11 @@
                              help="HASH_TOKEN required by PAYCOMET to initialize the simulator.">
                         <field name="instantcredit_hash_token" password="True" class="w-100" placeholder="Paste HASH_TOKEN"/>
                     </setting>
+                    <setting id="instantcredit_financial_product_id_setting"
+                             string="Financial Product ID"
+                             help="Optional. Set it if PAYCOMET requires a specific financial product for simulator calls.">
+                        <field name="instantcredit_financial_product_id" class="w-100" placeholder="e.g. 1234"/>
+                    </setting>
                 </block>
             </block>
         </field>
