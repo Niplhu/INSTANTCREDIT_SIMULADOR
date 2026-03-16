@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="payment_method_form_inherit_instantcredit_simulator" model="ir.ui.view">
+        <field name="name">payment.method.form.instantcredit.simulator</field>
+        <field name="model">payment.method</field>
+        <field name="inherit_id" ref="payment.payment_method_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group" position="inside">
+                <field name="is_paycomet_instant_credit"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

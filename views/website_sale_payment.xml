@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="website_sale_checkout_layout_inherit_paycomet_styles"
+              inherit_id="website_sale.checkout_layout"
+              name="PAYCOMET Instant Credit simulator styles">
+        <xpath expr="//div[@id='wrap']" position="inside">
+            <style>
+                .o_paycomet_simulator_box {
+                    border: 1px solid #d7dde4;
+                    border-radius: 10px;
+                    background: #f8fafc;
+                    padding: 12px;
+                }
+                .o_paycomet_simulator_title {
+                    font-weight: 600;
+                    color: #1f2937;
+                    margin-bottom: 8px;
+                    font-size: 0.95rem;
+                }
+                .o_paycomet_simulator_hint {
+                    margin-top: 10px;
+                    color: #4b5563;
+                    font-size: 0.86rem;
+                    line-height: 1.35;
+                }
+            </style>
+        </xpath>
+    </template>
+
+    <template id="payment_method_form_inherit_paycomet_instantcredit"
+              inherit_id="payment.method_form"
+              name="PAYCOMET Instant Credit in checkout payment option">
+
+        <xpath expr="//input[@name='o_payment_radio']" position="attributes">
+            <attribute name="t-att-data-paycomet-instantcredit">
+                1 if (
+                    pm_sudo.is_paycomet_instant_credit
+                    or pm_sudo.code == 'credit'
+                    or 'instant credit' in (pm_sudo.name or '').lower()
+                ) else 0
+            </attribute>
+        </xpath>
+
+    </template>
+
+    <template id="website_sale_total_inherit_paycomet_instantcredit"
+              inherit_id="website_sale.total"
+              name="PAYCOMET Instant Credit simulator in cart total">
+        <xpath expr="//div[@id='cart_total']" position="inside">
+            <div t-if="request and request.httprequest and request.httprequest.path == '/shop/cart'"
+             class="o_paycomet_cart_simulator mt-3"
+                 data-paycomet-eligible="1"
+                 t-att-data-script-url="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.script_url', '')"
+                 t-att-data-hash-token="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.hash_token', '')"
+                 t-att-data-financial-product-id="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.financial_product_id', '')"
+                 t-att-data-amount="website_sale_order.amount_total">
+                <div class="o_paycomet_simulator_box">
+                    <div class="o_paycomet_simulator_title">Simulador de cuotas Instant Credit</div>
+                    <div class="o_paycomet_instantcredit_mount">
+                        <div class="ic-configuration d-none"/>
+                        <div class="ic-simulator"/>
+                    </div>
+                    <div class="o_paycomet_simulator_hint">
+                        Si quieres financiar tu compra, en el siguiente paso selecciona <strong>Instant Credit</strong> como metodo de pago para continuar.
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="website_sale_cart_load_paycomet_script"
+              inherit_id="website_sale.cart"
+              name="Load PAYCOMET script on cart">
+        <xpath expr="//t[@t-call='website_sale.cart_lines']" position="after">
+            <script src="/instantcredit_simulator/static/src/js/paycomet_instantcredit.js"/>
+        </xpath>
+    </template>
+
+    <template id="website_sale_payment_load_paycomet_script"
+              inherit_id="website_sale.payment"
+              name="Load PAYCOMET script on payment">
+        <xpath expr="//t[@t-call='website_sale.checkout_layout']" position="inside">
+            <script src="/instantcredit_simulator/static/src/js/paycomet_instantcredit.js"/>
+        </xpath>
+    </template>
+
+    <template id="website_sale_payment_global_paycomet_config"
+              inherit_id="website_sale.payment"
+              name="Global PAYCOMET simulator in payment page">
+        <xpath expr="//div[@id='payment_method']" position="after">
+            <div class="o_paycomet_global_payment_simulator d-none mt-3"
+                 data-paycomet-instantcredit-container="1"
+                 data-paycomet-eligible="1"
+                 t-att-data-script-url="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.script_url', '')"
+                 t-att-data-hash-token="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.hash_token', '')"
+                 t-att-data-financial-product-id="request.env['ir.config_parameter'].sudo().get_param('instantcredit_simulator.financial_product_id', '')">
+                <div class="o_paycomet_simulator_box">
+                    <div class="o_paycomet_simulator_title">Simulador de cuotas Instant Credit</div>
+                    <div class="o_paycomet_instantcredit_mount">
+                        <div class="ic-configuration d-none"/>
+                        <div class="ic-simulator"/>
+                    </div>
+                    <div class="o_paycomet_simulator_hint">
+                        Para financiar tu pedido, selecciona <strong>Instant Credit</strong> y continua con el pago.
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

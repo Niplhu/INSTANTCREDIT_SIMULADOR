@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_instantcredit_simulator" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.instantcredit.simulator</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="website_shop_checkout" position="inside">
+                <block title="PAYCOMET Instant Credit" id="instantcredit_simulator_settings_block">
+                    <setting id="instantcredit_script_url_setting"
+                             string="Simulator Script URL"
+                             help="External JavaScript URL provided by PAYCOMET for the Instant Credit simulator.">
+                        <field name="instantcredit_script_url" class="w-100" placeholder="https://..."/>
+                    </setting>
+                    <setting id="instantcredit_hash_token_setting"
+                             string="HASH_TOKEN"
+                             help="HASH_TOKEN required by PAYCOMET to initialize the simulator.">
+                        <field name="instantcredit_hash_token" password="True" class="w-100" placeholder="Paste HASH_TOKEN"/>
+                    </setting>
+                    <setting id="instantcredit_financial_product_id_setting"
+                             string="Financial Product ID"
+                             help="Optional. Set it if PAYCOMET requires a specific financial product for simulator calls.">
+                        <field name="instantcredit_financial_product_id" class="w-100" placeholder="e.g. 1234"/>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>
